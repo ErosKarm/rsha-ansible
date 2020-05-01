@@ -1,0 +1,43 @@
+---
+- hosts: webservers
+  tasks:
+
+  - name: Andmebaasi loominwe wordpressi jaoks 
+    mysql_db:
+      name: wpdatabase
+      state: present
+
+  - name: Loome kasutaja 'wp'user' ja määrame parooliks 'qwerty' koos vajalike privileegidega
+    mysql_user:
+      name: wpuser
+      password: qwerty
+      priv: 'wpdatabase.*:ALL,GRANT'
+      state: present
+      check_implicit_admin: yes
+  - name: mysql restart
+    service: name=mysql state=restarted
+
+  - name: laeme alla mysql
+    unarchive:
+      src: https://wordpress.org/latest.tar.gz
+      dest: /var/www/html/
+      remote_src: yes
+
+  - name: Wordpressi kasuta omaniku vahetamine www-data
+    file:
+      path: /var/www/html/wordpress/
+      state: directory
+      recurse: yes
+      owner: www-data
+
+  - name: copyme config faili
+    command: cp /var/www/html/wordpress/wp-config-sample.php /var/www/html/wordpress/wp-config.php
+
+  - name: vahetame dbpasswordi wordpress config failis
+    lineinfile: dest=/var/www/html/wordpress/wp-config.php regexp="password_here'" line="define( 'DB_PASSWORD', 'qwerty' );"
+
+  - name: Vahetab 'DB_USER' wordpress config failis
+    lineinfile: dest=/var/www/html/wordpress/wp-config.php regexp="username_here" line="define( 'DB_USER', 'wpuser' );"
+
+  - name: Vahetab 'DB_NAME' wordpress config failis
+    lineinfile: dest=/var/www/html/wordpress/wp-config.php regexp="database_name_here" line="define( 'DB_NAME', 'wpdatabase' );"
