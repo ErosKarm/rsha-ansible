@@ -1,28 +1,53 @@
 ---
-language: python
-services: docker
+- hosts: webservers
+  tasks:
+    - name: debconf for pma
+      debconf: 
+        name=phpmyadmin
+        question='phpmyadmin/dbconfig-install'
+        value='true'
+        vtype='boolean'
 
-env:
-  global:
-    - ROLE_NAME: phpmyadmin
-  matrix:
-    - MOLECULE_DISTRO: centos7
-    - MOLECULE_DISTRO: ubuntu1804
-    - MOLECULE_DISTRO: debian9
+    - name: debconf for pma
+      debconf:
+        name=phpmyadmin
+        question='phpmyadmin/app-password-confirm'
+        value='qwerty'
+        vtype='password'
 
-install:
-  # Install test dependencies.
-  - pip install molecule yamllint ansible-lint docker
+    - name: debconf for pma
+      debconf:
+        name=phpmyadmin
+        question='phpmyadmin/mysql/admin-pass'
+        value='qwerty'
+        vtype='password'
 
-before_script:
-  # Use actual Ansible Galaxy role name for the project directory.
-  - cd ../
-  - mv ansible-role-$ROLE_NAME geerlingguy.$ROLE_NAME
-  - cd geerlingguy.$ROLE_NAME
+    - name: debconf for pma
+      debconf:
+        name=phpmyadmin
+        question='phpmyadmin/mysql/app-pass'
+        value='qwerty'
+        vtype='password'
 
-script:
-  # Run tests.
-  - molecule test
+    - name: debconf for pma
+      debconf:
+        name=phpmyadmin
+        question='phpmyadmin/reconfigure-webserver'
+        value=''
+        vtype='multiselect'
 
-notifications:
-  webhooks: https://galaxy.ansible.com/api/v1/notifications/
+    - name: install pma
+      apt:
+        pkg=phpmyadmin
+        state=present
+
+    - name: configure site
+      file:
+        path=/var/www/phpmyadmin
+        src=/usr/share/phpmyadmin
+        state=link
+
+    - name: allow phpmyadmin accest through http
+      lineinfile:
+        dest=/etc/apache2/apache2.conf
+        line="include /etc/phpmyadmin/apache.conf"
