@@ -33,8 +33,8 @@ git config --global core.editor nano
 - SERVERIIP/phpmyadmin
 - 192.168.1.10/phpmyadmin
 
-# NB! SKRIPTID PAIGALDAVAD AUTOMAATSELT ISE PAROOLID!
 ## Paroolid:
+NB! SKRIPTID PAIGALDAVAD AUTOMAATSELT ISE PAROOLID!
 ### MYSQL
 - kasutaja: user
 - parool: qwerty
